@@ -13,45 +13,45 @@
 #include "raycasting.h"
 #include "input.h"
 #include "network.h"
+#include "synchronization.h"
 
 // map layout
-int WIDTH  = 1600;
+int WIDTH = 1600;
 int HEIGHT = 800;
 int LIGHT_W;
 int LIGHT_H;
 
 int map[MAP_HEIGHT][MAP_WIDTH] = {
-    {1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,1,1,0,0,0,0,0,0, 0,0,0,1,1,0,0,0,0,0, 0,0,0,1,1,0,0,0,0,1},
-    {1,0,1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,1,1,1,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,1,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,1,0,0,1,0,0,0,0,1},
-    {1,0,0,0,0,1,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,1,1,0,0,0,0,0,0, 0,0,1,0,0,0,0,1,0,0, 0,0,0,0,0,1,1,0,0,1},
-    {1,0,1,0,0,0,0,0,0,0, 0,0,1,0,0,0,0,1,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,1,1,1,1,0, 0,0,0,0,0,0,0,0,0,0, 0,1,1,1,1,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,1,1,0,0,0,0,0, 0,0,0,0,1,1,0,0,0,0, 0,0,0,0,0,1,1,0,0,1},
-    {1,0,0,1,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,1,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,1,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,1,1,0, 0,0,0,0,0,0,0,0,0,0, 0,1,1,0,0,0,0,0,0,1},
-    {1,0,1,1,0,0,0,0,0,0, 0,0,0,0,0,1,1,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,1,1,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,1,1,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,1,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,1,1,1,0,0,0,0,0,0, 0,0,1,0,0,0,0,0,0,1},
-    {1,0,1,1,1,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,1,1,0,0, 0,0,0,0,1,1,0,0,0,1},
-    {1,0,0,0,0,0,1,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,1,0,0,0, 0,0,0,1,0,0,0,0,0,0, 0,1,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,1},
-    {1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1}
-};
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1},
+    {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1},
+    {1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
 // initialize player and app state
 Player player = {CELL_SIZE * 6.5f, CELL_SIZE * 4.5f, 0.0f * (M_PI / 180.0f)};
@@ -71,11 +71,11 @@ void main_loop()
 
     while (SDL_PollEvent(&event))
     {
-        switch(event.type)
+        switch (event.type)
         {
-            case SDL_QUIT:
-                app_running = 0;
-                break;
+        case SDL_QUIT:
+            app_running = 0;
+            break;
         }
     }
 
@@ -94,8 +94,7 @@ void main_loop()
             Network_SendPlayerState(
                 player.x,
                 player.y,
-                player.angle
-            );
+                player.angle);
 
             last_network_send = current_time;
         }
@@ -110,61 +109,55 @@ void main_loop()
     SDL_FillRect(psurface, &floor_rect, 0x2d2d2d);
 
     DrawFOV(psurface, player);
-    
-    
-    // get every active remote player once per frame
-    // used for the 3D sprites and for the minimap dots
-    
-    RemotePlayerState remote_states[MAX_REMOTE_PLAYERS];
-    int remote_count = Network_GetRemotePlayers(
-        remote_states,
-        MAX_REMOTE_PLAYERS
-    );
 
-    // draw each remote player as a sprite in the 3D view
+    RemotePlayerState network_states[MAX_REMOTE_PLAYERS];
+
+    int network_count = Network_GetRemotePlayers(
+        network_states,
+        MAX_REMOTE_PLAYERS);
+
+    RemotePlayerState remote_states[MAX_REMOTE_PLAYERS];
+
+    int remote_count = Synchronization_ProcessPlayers(
+        network_states,
+        network_count,
+        remote_states,
+        MAX_REMOTE_PLAYERS);
+
     for (int i = 0; i < remote_count; i++)
     {
         Player remote_player =
-        {
-            remote_states[i].x,
-            remote_states[i].y,
-            remote_states[i].angle
-        };
+            {
+                remote_states[i].x,
+                remote_states[i].y,
+                remote_states[i].angle};
 
         DrawRemotePlayerSprite(
             psurface,
             player,
             remote_player,
-            remote_states[i].player_id
-        );
+            remote_states[i].player_id);
     }
 
-    // Draw the map and local player.
     DrawMiniMap(psurface);
 
-    // draw each remote player on the minimap.
     for (int i = 0; i < remote_count; i++)
     {
         Player remote_player =
-        {
-            remote_states[i].x,
-            remote_states[i].y,
-            remote_states[i].angle
-        };
-
+            {
+                remote_states[i].x,
+                remote_states[i].y,
+                remote_states[i].angle};
 
         DrawRemotePlayerOnMiniMap(
             psurface,
             remote_player,
-            remote_states[i].player_id
-        );
+            remote_states[i].player_id);
     }
 
     SDL_UpdateWindowSurface(pwindow);
 }
 
-// browsers only allow pointer lock after a user action, so lock on click
-// while locked, the cursor is hidden and movementX keeps working with no screen edge
 EM_BOOL click_callback(int eventType, const EmscriptenMouseEvent *e, void *userData)
 {
     emscripten_request_pointerlock("#canvas", true);
@@ -173,7 +166,6 @@ EM_BOOL click_callback(int eventType, const EmscriptenMouseEvent *e, void *userD
 
 int main(int argc, char *argv[])
 {
-    // Read actual browser canvas size
     WIDTH = EM_ASM_INT({
         return document.getElementById('canvas').width;
     });
@@ -201,23 +193,20 @@ int main(int argc, char *argv[])
         SDL_WINDOWPOS_CENTERED,
         WIDTH,
         HEIGHT,
-        0
-    );
+        0);
 
     psurface = SDL_GetWindowSurface(pwindow);
 
-    /*
-     * Connect this browser client to the local
-     * multiplayer WebSocket server.
-     */
     Network_Init("ws://localhost:8081");
+
+    Synchronization_SetMode(
+        SYNC_INTERPOLATION);
 
     emscripten_set_mousemove_callback(
         "#canvas",
         NULL,
         true,
-        mouse_move_callback
-    );
+        mouse_move_callback);
     emscripten_set_click_callback("#canvas", NULL, true, click_callback);
     emscripten_set_main_loop(main_loop, 0, 1);
 

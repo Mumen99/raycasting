@@ -3,18 +3,8 @@
 
 #include <stdbool.h>
 
-//max num of other players it can track
-// 4 + 1 (localhost) = 5
 #define MAX_REMOTE_PLAYERS 4
-/*
- * Stores the latest known state of another player.
- *
- * For our current two-player MVP, we only need to store
- * one remote player.
- *
- * If we later support 3+ players, this can be changed
- * into an array of RemotePlayerState objects.
- */
+
 typedef struct
 {
     int player_id;
@@ -24,56 +14,34 @@ typedef struct
     float angle;
 
     /*
-     * false = we have not received a remote player yet
-     * true  = this structure contains valid player data
+     * Increases every time a new network update
+     * is received for this player.
+     *
+     * This lets synchronization.c detect a new
+     * packet even when the player's position
+     * has not changed.
      */
+    unsigned int update_id;
+
     bool active;
 
 } RemotePlayerState;
 
-/*
- * Connect to the multiplayer WebSocket server.
- */
 void Network_Init(const char *server_url);
 
-/*
- * Send the local player's current game state.
- */
 void Network_SendPlayerState(
     float x,
     float y,
-    float angle
-);
+    float angle);
 
-/*
- * Returns true if the WebSocket connection
- * to the server is currently open.
- */
 bool Network_IsConnected(void);
 
-/*
- * Returns the player ID assigned by the server.
- *
- * Returns -1 if the server has not assigned one yet.
- */
 int Network_GetLocalPlayerId(void);
 
-/*
- * Copies the latest remote player state into out_state.
- *
- * Returns:
- *
- * true  = remote player data is available
- * false = no remote player data has been received yet
- */
 int Network_GetRemotePlayers(
     RemotePlayerState *out_states,
-    int max_states
-);
+    int max_states);
 
-/*
- * Close the WebSocket connection.
- */
 void Network_Shutdown(void);
 
 #endif

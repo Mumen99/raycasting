@@ -1,5 +1,5 @@
 @echo off
-emcc main.c raytracing.c raycasting.c input.c network.c -o index.html ^
+emcc main.c raytracing.c raycasting.c input.c network.c synchronization.c -o index.html ^
   --shell-file shell.html ^
   -s USE_SDL=2 ^
   -s WASM=1 ^

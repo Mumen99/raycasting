@@ -1,0 +1,39 @@
+CSC 466 project logbook
+Week of October 12:
+Started implementing multiplayer networking for our existing raycaster
+Created the WebSocket networking module using Emscripten and created a Node.js WebSocket server
+Added player IDs and sent the players' X position, Y position, and facing angle between the clients
+Week of October 19:
+Tested multiplayer locally using two browser clients, and connected the received remote player states to the game
+Verified that both clients could send and receive player stats and connect their positions to the minimap
+Completed networking section for the first bi-weekly project update
+Once the server and basic network were implemented, extended it to support more than 1 player.
+Added the multiplayer rendering (viewing other players on the local network). 
+Quality of Life changes (bigger map, different colored map icons, leave message in server)
+Researched all the synchronization methods that we will use in this project (no smoothing, interpolation, and extrapolation)
+Compared how each method handles the players' movements
+
+
+
+Week of October 26:
+Started working on the game-state synchronization part of the project
+Added a separate synchronization.c and synchronization.h between networking and rendering layers
+Started implementing no smoothing as our baseline synchronization method, and we added snapshot history to collect and store the newest and previous state of the players
+
+Week of November 2:
+Started working on implementing the interpolation synchronization method for remote players' X and Y positions
+Implemented interpolation for facing angle using the shortest rotation direction
+Added timing between network updates, and update tracking to calculate interpolation and detect if there are repeated network states(Player not moving)
+Verified and tested that interpolation works using browser console values
+Returned the multiplayer update rate to the normal 50 ms(20 updates per second)
+Completed the second bi-weekly project update
+
+
+
+Week of November 9:
+
+Started working on the extrapolation synchronization method
+Moved and pushed the synchronization files and networking changes to the mumen-synchronization branch
+
+
+
